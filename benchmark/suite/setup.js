@@ -4,6 +4,7 @@ const fastbench = require('fastbench')
 const holz = require('holz')
 const pino = require('pino')
 const bunyan = require('bunyan')
+const bole = require('bole')
 const winston = require('winston')
 
 const devNull = fs.createWriteStream('/dev/null')
@@ -32,6 +33,13 @@ exports.winstonLogger = winston.createLogger({
     })
   ]
 })
+
+bole.output([
+  { level: 'debug', stream: devNull }
+])
+bole.setFastTime()
+
+exports.boleLogger = bole('test')
 
 exports.bench = (...args) => {
   const run = fastbench(...args)

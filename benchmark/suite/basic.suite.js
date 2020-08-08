@@ -1,8 +1,14 @@
-const { bunyanLogger, winstonLogger, pinoLogger, holzLogger, bench } = require('./setup')
+const { bunyanLogger, winstonLogger, pinoLogger, holzLogger, boleLogger, bench } = require('./setup')
 
 const MAX = 20
 
 module.exports = bench([
+  function benchBole (cb) {
+    for (let i = 0; i < MAX; ++i) {
+      boleLogger.info('hello world')
+    }
+    setImmediate(cb)
+  },
   function benchBunyan (cb) {
     for (let i = 0; i < MAX; ++i) {
       bunyanLogger.info('hello world')

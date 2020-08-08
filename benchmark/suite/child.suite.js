@@ -1,4 +1,4 @@
-const { bunyanLogger, winstonLogger, pinoLogger, holzLogger, bench } = require('./setup')
+const { bunyanLogger, winstonLogger, pinoLogger, holzLogger, boleLogger, bench } = require('./setup')
 
 const MAX = 20
 

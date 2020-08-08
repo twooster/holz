@@ -330,14 +330,16 @@ thing:
 
 ```
 Basic suite:
-benchBunyan*10000: 734.28ms
-benchWinston*10000: 608.567ms
-benchPino*10000: 303.99ms
-benchHolz*10000: 270.803ms
-benchBunyan*10000: 696.532ms
-benchWinston*10000: 542.484ms
-benchPino*10000: 281.114ms
-benchHolz*10000: 262.23ms
+benchBole*10000: 316.986ms
+benchBunyan*10000: 773.702ms
+benchWinston*10000: 661.043ms
+benchPino*10000: 327.702ms
+benchHolz*10000: 296.616ms
+benchBole*10000: 283.773ms
+benchBunyan*10000: 757.361ms
+benchWinston*10000: 583.192ms
+benchPino*10000: 312.009ms
+benchHolz*10000: 290.921ms
 
 Child logger suite:
 benchBunyan*10000: 802.076ms
