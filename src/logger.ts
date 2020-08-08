@@ -17,7 +17,7 @@ export type LoggerOpts<T extends LevelMapping> = {
   format: (msg: string, ...args: unknown[]) => string
   transform: (o: object) => object
   fieldTransforms: { [k in string | number]: (v: unknown, k: string) => unknown }
-  output: (s: Payload) => void
+  output: (s: Payload) => unknown
 }
 
 export type ChildOpts<T extends LevelMapping> = Exclude<Partial<LoggerOpts<T>>, 'levels' | 'fields'>
@@ -35,7 +35,7 @@ export class BaseLogger<T extends LevelMapping> {
   format: (msg: string, ...args: unknown[]) => string
   transform: (o: object) => object
   fieldTransforms?: { [k in string | number]: (v: unknown, k: string) => unknown }
-  output: (s: Payload) => void
+  output: (s: Payload) => unknown
 
   constructor(opts: LoggerOpts<T>) {
     this.levels = opts.levels

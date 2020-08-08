@@ -322,3 +322,39 @@ The easiest thing to do is to simply provide some defaults to `createLogger`.
 Otherwise, to get the correct type-checking, you'll need to mix together the
 `BaseLogger` class with the `LogMethods` type to get your proper type
 checking. Check out how `createLogger` works to see that in action.
+
+## I want microbenchmarks:
+
+Sure ok, synchronous streaming to /dev/null:
+
+```
+Basic suite:
+benchBunyan*10000: 1.219s
+benchWinston*10000: 940.472ms
+benchPino*10000: 471.198ms
+benchHolz*10000: 424.653ms
+benchBunyan*10000: 1.098s
+benchWinston*10000: 833.328ms
+benchPino*10000: 446.835ms
+benchHolz*10000: 408.945ms
+
+Child logger suite:
+benchBunyan*10000: 1.258s
+benchWinston*10000: 1.199s
+benchPino*10000: 538.479ms
+benchHolz*10000: 578.391ms
+benchBunyan*10000: 1.246s
+benchWinston*10000: 1.158s
+benchPino*10000: 512.507ms
+benchHolz*10000: 544.792ms
+
+Dynamic child logger suite:
+benchBunyan*10000: 1.653s
+benchWinston*10000: 1.382s
+benchPino*10000: 835.43ms
+benchHolz*10000: 691.286ms
+benchBunyan*10000: 1.645s
+benchWinston*10000: 1.389s
+benchPino*10000: 826.448ms
+benchHolz*10000: 701.842ms
+```

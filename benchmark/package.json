@@ -1,0 +1,21 @@
+{
+  "name": "holz-benchmark",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tony Wooster <twooster@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "benchmark": "^2.1.4",
+    "bole": "^4.0.0",
+    "bunyan": "^1.8.14",
+    "fastbench": "^1.0.1",
+    "holz": "file:..",
+    "log4js": "^6.3.0",
+    "pino": "^6.5.0",
+    "winston": "^3.3.3"
+  }
+}

@@ -5,8 +5,10 @@ import { safeStringify } from './safe-stringify'
 
 export { defaultFormat }
 
-export const defaultOutput =
-  (p: object) => process.stdout.write(safeStringify(p) + "\n")
+export const streamOutput = (s: { write(o: unknown): unknown }) =>
+  (p: object) => s.write(safeStringify(p) + "\n")
+
+export const defaultOutput = streamOutput(process.stdout)
 
 export const defaultTransform =
   (o: object) => o instanceof Error ? { error: transformError(o) } : o
