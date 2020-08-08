@@ -1,3 +1,16 @@
+import fastSafeStringify from 'fast-safe-stringify'
+
+export const safeStringify = (o: object) => {
+  try {
+    return JSON.stringify(o)
+  } catch (_) {
+    return fastSafeStringify(o)
+  }
+}
+
+export const toStream = (s: { write(o: unknown): unknown }) =>
+  (p: object) => s.write(safeStringify(p) + "\n")
+
 function buildFullErrorStack(err: { [k: string]: unknown }): string {
   let ret: string = String(err.stack)
   try {

@@ -1,4 +1,5 @@
-import { levelNumberSym, levelStringSym } from './symbols'
+export const levelStringSym: unique symbol = Symbol('levelString')
+export const levelNumberSym: unique symbol = Symbol('levelNumber')
 
 export type Payload = { [k in PropertyKey]: unknown } & {
   [levelNumberSym]: number
