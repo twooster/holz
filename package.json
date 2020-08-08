@@ -4,6 +4,7 @@
   "description": "Holz: A fast, minimal TypeScript logger",
   "main": "dist/index.js",
   "scripts": {
+    "bench": "npm run build && node benchmark",
     "prepare": "npm run build",
     "build": "rimraf 'dist' && tsc -b",
     "test": "echo \"Error: no test specified\" && exit 1"

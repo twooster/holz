@@ -1,12 +1,18 @@
 const basicSuite = require('./suite/basic.suite')
 const childSuite = require('./suite/child.suite')
+const childChildSuite = require('./suite/child-child.suite')
 const dynamicChildSuite = require('./suite/dynamic-child.suite')
+const dynamicChildChildSuite = require('./suite/dynamic-child-child.suite')
 
 ;(async () => {
   console.log('Basic suite:')
   await basicSuite(2)
   console.log('\nChild logger suite:')
   await childSuite(2)
+  console.log('\nChild-child logger suite:')
+  await childChildSuite(2)
   console.log('\nDynamic child logger suite:')
   await dynamicChildSuite(2)
+  console.log('\nDynamic child-child logger suite:')
+  await dynamicChildChildSuite(2)
 })()

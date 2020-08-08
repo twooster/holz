@@ -330,32 +330,52 @@ thing:
 
 ```
 Basic suite:
-benchBunyan*10000: 1.219s
-benchWinston*10000: 940.472ms
-benchPino*10000: 471.198ms
-benchHolz*10000: 424.653ms
-benchBunyan*10000: 1.098s
-benchWinston*10000: 833.328ms
-benchPino*10000: 446.835ms
-benchHolz*10000: 408.945ms
+benchBunyan*10000: 734.28ms
+benchWinston*10000: 608.567ms
+benchPino*10000: 303.99ms
+benchHolz*10000: 270.803ms
+benchBunyan*10000: 696.532ms
+benchWinston*10000: 542.484ms
+benchPino*10000: 281.114ms
+benchHolz*10000: 262.23ms
 
 Child logger suite:
-benchBunyan*10000: 1.258s
-benchWinston*10000: 1.199s
-benchPino*10000: 538.479ms
-benchHolz*10000: 578.391ms
-benchBunyan*10000: 1.246s
-benchWinston*10000: 1.158s
-benchPino*10000: 512.507ms
-benchHolz*10000: 544.792ms
+benchBunyan*10000: 802.076ms
+benchWinston*10000: 808.245ms
+benchPino*10000: 353.756ms
+benchHolz*10000: 377.896ms
+benchBunyan*10000: 829.824ms
+benchWinston*10000: 736.329ms
+benchPino*10000: 322.725ms
+benchHolz*10000: 353.784ms
+
+Child-child logger suite:
+benchBunyan*10000: 918.099ms
+benchWinston*10000: 1.033s
+benchPino*10000: 664.097ms
+benchHolz*10000: 483.97ms
+benchBunyan*10000: 951.717ms
+benchWinston*10000: 1.049s
+benchPino*10000: 652.031ms
+benchHolz*10000: 463.56ms
 
 Dynamic child logger suite:
-benchBunyan*10000: 1.653s
-benchWinston*10000: 1.382s
-benchPino*10000: 835.43ms
-benchHolz*10000: 691.286ms
-benchBunyan*10000: 1.645s
-benchWinston*10000: 1.389s
-benchPino*10000: 826.448ms
-benchHolz*10000: 701.842ms
+benchBunyan*10000: 1.098s
+benchWinston*10000: 962.139ms
+benchPino*10000: 712.427ms
+benchHolz*10000: 472.344ms
+benchBunyan*10000: 1.107s
+benchWinston*10000: 965.001ms
+benchPino*10000: 747.214ms
+benchHolz*10000: 479.462ms
+
+Dynamic child-child logger suite:
+benchBunyan*10000: 1.461s
+benchWinston*10000: 1.972s
+benchPino*10000: 4.851s
+benchHolz*10000: 707.452ms
+benchBunyan*10000: 1.487s
+benchWinston*10000: 2.003s
+benchPino*10000: 4.938s
+benchHolz*10000: 734.01ms
 ```
