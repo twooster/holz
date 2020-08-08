@@ -1,6 +1,6 @@
 {
   "name": "holz",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Holz: A fast, minimal TypeScript logger",
   "main": "dist/index.js",
   "scripts": {
@@ -27,6 +27,9 @@
   "dependencies": {
     "fast-safe-stringify": "^2.0.7"
   },
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=6.4.0"
   },
