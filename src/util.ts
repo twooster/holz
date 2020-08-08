@@ -1,14 +1,14 @@
-import fastSafeStringify from 'fast-safe-stringify'
+import safeJsonStringify = require('safe-json-stringify')
 
 export function safeStringify(o: object): string {
   try {
     return JSON.stringify(o)
   } catch (_) {
-    return fastSafeStringify(o)
+    return safeJsonStringify(o)
   }
 }
 
-export function toStream(s: { write(o: unknown): unknown }) {
+export function jsonToStream(s: { write(o: unknown): unknown }) {
   return function outputToStream (p: object) {
     s.write(safeStringify(p) + "\n")
   }

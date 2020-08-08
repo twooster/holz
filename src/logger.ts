@@ -17,7 +17,7 @@ export type LoggerOpts<T extends LevelMapping> = {
   messageKey: string
   format: (msg: string, ...args: unknown[]) => string
   transform: (o: object) => object
-  fieldTransforms: { [k in string | number]: (v: unknown, k: string) => unknown }
+  fieldTransforms?: { [k in string | number]: (v: unknown, k: string) => unknown }
   output: (s: Payload) => unknown
 }
 

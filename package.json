@@ -13,7 +13,11 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^14.0.27",
+    "@types/safe-json-stringify": "^1.1.1",
+    "ava": "^3.11.1",
     "rimraf": "^3.0.2",
+    "testdouble": "^3.16.1",
+    "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
   },
   "homepage": "https://github.com/twooster/holz#readme",
@@ -25,7 +29,7 @@
     "url": "https://github.com/twooster/holz.git"
   },
   "dependencies": {
-    "fast-safe-stringify": "^2.0.7"
+    "safe-json-stringify": "^1.2.0"
   },
   "files": [
     "dist"
@@ -38,5 +42,13 @@
     "typescript",
     "fast"
   ],
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  },
   "typings": "dist/index.d.ts"
 }

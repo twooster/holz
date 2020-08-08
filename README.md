@@ -3,6 +3,9 @@
 Holz is a logging library for those situations where you want fast, simple,
 and extensible.
 
+It's smaller and faster than pretty much anything out there.
+
+
 ## Motivation
 
 There's a lot of loggers out there. Bunyan, Winston, Pino, log4js, ye old

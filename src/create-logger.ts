@@ -2,11 +2,11 @@ import { format as defaultFormat } from 'util'
 
 import { LoggerOpts, LevelMapping, BaseLogger, Logger } from './logger'
 
-import { transformError, toStream } from './util'
+import { transformError, jsonToStream } from './util'
 
 export { defaultFormat }
 
-export const defaultOutput = toStream(process.stdout)
+export const defaultOutput = jsonToStream(process.stdout)
 
 export function defaultTransform(o: object) {
   return o instanceof Error ? { error: transformError(o) } : o
@@ -38,7 +38,7 @@ export const defaultFieldTransforms = {
 type CreateLoggerOptsWithoutLevels = Partial<Exclude<LoggerOpts<typeof defaultLevels>, 'levels'>>
 type CreateLoggerOpts<T extends LevelMapping> = Partial<Exclude<LoggerOpts<T>, 'levels' | 'level'>> & Pick<LoggerOpts<T>, 'levels' | 'level'>
 
-export function createLogger(opts: CreateLoggerOptsWithoutLevels): Logger<typeof defaultLevels>
+export function createLogger(opts?: CreateLoggerOptsWithoutLevels): Logger<typeof defaultLevels>
 export function createLogger<T extends LevelMapping>(opts: CreateLoggerOpts<T>): Logger<T>
 export function createLogger<T extends LevelMapping>(opts: CreateLoggerOpts<T> | CreateLoggerOptsWithoutLevels = {}): Logger<T> {
   return new BaseLogger({

@@ -21,7 +21,7 @@ exports.pinoLogger = pino({ level: 'trace' }, devNull)
 
 exports.holzLogger = holz.createLogger({
   level: 'trace',
-  output: holz.toStream(devNull)
+  output: holz.jsonToStream(devNull)
 })
 
 exports.winstonLogger = winston.createLogger({
