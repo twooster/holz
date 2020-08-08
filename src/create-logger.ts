@@ -8,8 +8,9 @@ export { defaultFormat }
 
 export const defaultOutput = toStream(process.stdout)
 
-export const defaultTransform =
-  (o: object) => o instanceof Error ? { error: transformError(o) } : o
+export function defaultTransform(o: object) {
+  return o instanceof Error ? { error: transformError(o) } : o
+}
 
 export const defaultLevels = {
   trace: 10,

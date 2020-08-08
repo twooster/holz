@@ -1,6 +1,6 @@
 import fastSafeStringify from 'fast-safe-stringify'
 
-export const safeStringify = (o: object) => {
+export function safeStringify(o: object): string {
   try {
     return JSON.stringify(o)
   } catch (_) {
@@ -8,8 +8,11 @@ export const safeStringify = (o: object) => {
   }
 }
 
-export const toStream = (s: { write(o: unknown): unknown }) =>
-  (p: object) => s.write(safeStringify(p) + "\n")
+export function toStream(s: { write(o: unknown): unknown }) {
+  return function outputToStream (p: object) {
+    s.write(safeStringify(p) + "\n")
+  }
+}
 
 function buildFullErrorStack(err: { [k: string]: unknown }): string {
   let ret: string = String(err.stack)
