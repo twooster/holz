@@ -325,7 +325,8 @@ checking. Check out how `createLogger` works to see that in action.
 
 ## I want microbenchmarks:
 
-Sure ok, synchronous streaming to /dev/null:
+Sure ok, synchronous streaming to /dev/null, if you care about that sort of
+thing:
 
 ```
 Basic suite:

@@ -1,18 +1,38 @@
 {
   "name": "holz",
-  "version": "0.0.1",
-  "description": "",
+  "version": "1.0.0",
+  "description": "Holz: A fast, minimal TypeScript logger",
   "main": "dist/index.js",
   "scripts": {
+    "prepare": "npm run build",
+    "build": "rimraf 'dist' && tsc -b",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Tony Wooster <twooster@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^14.0.27",
+    "rimraf": "^3.0.2",
     "typescript": "^3.9.7"
+  },
+  "homepage": "https://github.com/twooster/holz#readme",
+  "bugs": {
+    "url": "https://github.com/twooster/holz/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/twooster/holz.git"
   },
   "dependencies": {
     "fast-safe-stringify": "^2.0.7"
-  }
+  },
+  "engines": {
+    "node": ">=6.4.0"
+  },
+  "keywords": [
+    "logger",
+    "typescript",
+    "fast"
+  ],
+  "typings": "dist/index.d.ts"
 }
