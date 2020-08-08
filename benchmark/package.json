@@ -14,7 +14,6 @@
     "bunyan": "^1.8.14",
     "fastbench": "^1.0.1",
     "holz": "file:..",
-    "log4js": "^6.3.0",
     "pino": "^6.5.0",
     "winston": "^3.3.3"
   }

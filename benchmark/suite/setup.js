@@ -5,7 +5,6 @@ const holz = require('holz')
 const pino = require('pino')
 const bunyan = require('bunyan')
 const winston = require('winston')
-const log4js = require('log4js')
 
 const devNull = fs.createWriteStream('/dev/null')
 
