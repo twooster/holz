@@ -155,7 +155,7 @@ export class BaseLogger<T extends LevelMapping> {
           try {
             payload[k] = ft[k].call(this, payload[k], k)
           } catch (_) {
-            payload[k] = ft[k]
+            // noop
           }
         }
       }

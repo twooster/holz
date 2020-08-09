@@ -1,4 +1,4 @@
-# Holz, the Standard Logger
+# Holz, a fast, minimal TypeScript logger
 
 Holz is a logging library for those situations where you want fast, simple,
 and extensible.
@@ -14,7 +14,7 @@ console.log. None of them scratched my itch:
 * Fast
 * Built for Node
 * Simple, readable code
-* Only one dependency ([`fast-safe-stringify`](https://www.npmjs.com/package/fast-safe-stringify))
+* Only one dependency ([`safe-json-stringify`](https://www.npmjs.com/package/safe-json-stringify))
 * TypeScript, and fully type-checked
 * Child loggers with fields
 * Custom and dynamic base objects
@@ -110,7 +110,7 @@ const logger = createLogger({
   },
   level: 'info',
 })
-// Works fine; key retried from `levels` def'n
+// Works fine; key retrieved from `levels` def'n
 logger.info(...)
 ```
 
@@ -131,7 +131,7 @@ logger.info(...) // `info` not defined
 ```
 
 Also, don't use the keys `child` or `setLevel` or `_log` as log levels,
-cuz that will cause problems when the logging methods are assigned to
+because that will cause problems when the logging methods are assigned to
 the logger.
 
 ### Methods on the logger
@@ -246,7 +246,9 @@ this lib to access that dependency.
 That looks like this:
 
 ```javascript
-export const defaultTransform = transformError
+export function defaultTransform(o: object) {
+  return o instanceof Error ? { error: transformError(o) } : o
+}
 ```
 
 `transformError` basically takes any Error-alike object (has a `.stack`
@@ -282,6 +284,9 @@ Like so:
 export const defaultLevelOutput = 'string' as const
 ```
 
+This means the default is that the level information (attached to the `levelKey`)
+field, is outputted as a string. Like `'info'` or `'error'`.
+
 ##### Default `levelKey`
 
 As you might expect, the default key used on the payload output to contain
@@ -296,7 +301,7 @@ Or maybe you expected `severity`. Oops.
 
 ##### Default `messageKey`
 
-Okay:
+What field on the payload object receives the provided message (if any):
 
 ```javascript
 export const defaultMessageKey = 'msg'
@@ -308,6 +313,8 @@ export const defaultMessageKey = 'msg'
 export const defaultLevel = defaultLevels['info']
 ```
 
+The default log level is `'info'`.
+
 ##### Default `fieldTransforms`
 
 ```javascript
@@ -317,7 +324,8 @@ export const defaultFieldTransforms = {
 }
 ```
 
-Again, as a greatest-common-denominator.
+Again, as a greatest-common-denominator, we provide some field transforms on
+`err` and `error` to help capture stack traces, etc.
 
 ### Creating your own logger factory
 
