@@ -230,7 +230,7 @@ export const safeStringify = (o: Payload) => {
   try {
     return JSON.stringify(o)
   } catch (_) {
-    return fastSafeStringify(o)
+    return safeJsonStringify(o)
   }
 }
 
