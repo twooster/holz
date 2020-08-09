@@ -341,54 +341,54 @@ thing:
 
 ```
 Basic suite:
-benchBole*10000: 316.986ms
-benchBunyan*10000: 773.702ms
-benchWinston*10000: 661.043ms
-benchPino*10000: 327.702ms
-benchHolz*10000: 296.616ms
-benchBole*10000: 283.773ms
-benchBunyan*10000: 757.361ms
-benchWinston*10000: 583.192ms
-benchPino*10000: 312.009ms
-benchHolz*10000: 290.921ms
+benchBole*10000: 300.221ms
+benchBunyan*10000: 720.514ms
+benchWinston*10000: 599.488ms
+benchPino*10000: 296.013ms
+benchHolz*10000: 265.505ms
+benchBole*10000: 263.758ms
+benchBunyan*10000: 706.158ms
+benchWinston*10000: 541.225ms
+benchPino*10000: 299.892ms
+benchHolz*10000: 266.272ms
 
 Child logger suite:
-benchBunyan*10000: 802.076ms
-benchWinston*10000: 808.245ms
-benchPino*10000: 353.756ms
-benchHolz*10000: 377.896ms
-benchBunyan*10000: 829.824ms
-benchWinston*10000: 736.329ms
-benchPino*10000: 322.725ms
-benchHolz*10000: 353.784ms
+benchBunyan*10000: 822.318ms
+benchWinston*10000: 798.428ms
+benchPino*10000: 353.4ms
+benchHolz*10000: 369.783ms
+benchBunyan*10000: 824.804ms
+benchWinston*10000: 774.49ms
+benchPino*10000: 345.426ms
+benchHolz*10000: 369.118ms
 
 Child-child logger suite:
-benchBunyan*10000: 918.099ms
-benchWinston*10000: 1.033s
-benchPino*10000: 664.097ms
-benchHolz*10000: 483.97ms
-benchBunyan*10000: 951.717ms
-benchWinston*10000: 1.049s
-benchPino*10000: 652.031ms
-benchHolz*10000: 463.56ms
+benchBunyan*10000: 972.788ms
+benchWinston*10000: 1.089s
+benchPino*10000: 669.386ms
+benchHolz*10000: 475.625ms
+benchBunyan*10000: 978.817ms
+benchWinston*10000: 1.059s
+benchPino*10000: 670.877ms
+benchHolz*10000: 476.969ms
 
 Dynamic child logger suite:
-benchBunyan*10000: 1.098s
-benchWinston*10000: 962.139ms
-benchPino*10000: 712.427ms
-benchHolz*10000: 472.344ms
-benchBunyan*10000: 1.107s
-benchWinston*10000: 965.001ms
-benchPino*10000: 747.214ms
-benchHolz*10000: 479.462ms
+benchBunyan*10000: 1.138s
+benchWinston*10000: 955.762ms
+benchPino*10000: 694.778ms
+benchHolz*10000: 490.67ms
+benchBunyan*10000: 1.138s
+benchWinston*10000: 963.158ms
+benchPino*10000: 697.533ms
+benchHolz*10000: 491.828ms
 
 Dynamic child-child logger suite:
-benchBunyan*10000: 1.461s
-benchWinston*10000: 1.972s
-benchPino*10000: 4.851s
-benchHolz*10000: 707.452ms
-benchBunyan*10000: 1.487s
-benchWinston*10000: 2.003s
-benchPino*10000: 4.938s
-benchHolz*10000: 734.01ms
+benchBunyan*10000: 1.526s
+benchWinston*10000: 2.011s
+benchPino*10000: 5.013s
+benchHolz*10000: 722.507ms
+benchBunyan*10000: 1.538s
+benchWinston*10000: 2.035s
+benchPino*10000: 5.092s
+benchHolz*10000: 731.108ms
 ```
