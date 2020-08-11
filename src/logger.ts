@@ -166,7 +166,7 @@ export class BaseLogger<T extends LevelMapping> {
 
     try {
       this.output(payload)
-    } catch(e) {
+    } catch(_) {
       // noop
     }
   }

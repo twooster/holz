@@ -3,7 +3,9 @@
 Holz is a logging library for those situations where you want fast, simple,
 and extensible.
 
-It's smaller and faster than pretty much anything out there.
+It's smaller and faster than pretty much anything out there. That's because
+it doesn't do much: it's meant for situations where you're using containers
+and capturing all output via your containerization solution.
 
 
 ## Motivation
