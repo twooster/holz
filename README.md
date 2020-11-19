@@ -1,3 +1,5 @@
+![Holz Logo](./assets/holz.png "Holz")
+
 # Holz, a fast, minimal TypeScript logger
 
 Holz is a logging library for those situations where you want fast, simple,
