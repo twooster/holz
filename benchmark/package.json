@@ -14,7 +14,7 @@
     "bunyan": "^1.8.14",
     "fastbench": "^1.0.1",
     "holz": "file:..",
-    "pino": "^6.5.0",
+    "pino": "^6.7.0",
     "winston": "^3.3.3"
   }
 }

@@ -5,6 +5,7 @@ export type Payload = { [k in PropertyKey]: unknown } & {
   [levelNumberSym]: number
   [levelStringSym]: string
 }
+
 export type LevelMapping = { [k in string]: number }
 
 export type LoggerOpts<T extends LevelMapping> = {
@@ -79,7 +80,7 @@ export class BaseLogger<T extends LevelMapping> {
       levels: this.levels,
       base: opts.base || this.base,
       fields: this.fields
-        ? Object.assign({}, this.fields, fields)
+        ? { ...this.fields, ...fields }
         : fields,
       levelOutput: opts.levelOutput || this.levelOutput,
       levelKey: opts.levelKey ?? this.levelKey,
@@ -88,7 +89,9 @@ export class BaseLogger<T extends LevelMapping> {
       output: opts.output || this.output,
       transform: opts.transform || this.transform,
       fieldTransforms: opts.fieldTransforms
-        ? (this.fieldTransforms ? Object.assign({}, this.fieldTransforms, opts.fieldTransforms) : opts.fieldTransforms)
+        ? this.fieldTransforms
+          ? { ...this.fieldTransforms, ...opts.fieldTransforms }
+          : opts.fieldTransforms
         : this.fieldTransforms
     } as LoggerOpts<T>) as Logger<T>
   }
@@ -100,20 +103,14 @@ export class BaseLogger<T extends LevelMapping> {
       return
     }
 
-    const levelVal = this.levelOutput === 'string' ? levelString : level
     let payload: Payload
-    if (this.base) {
-      try {
-        payload = {
-          [this.levelKey]: levelVal,
-          ...this.base()
-        } as Payload
-      } catch (_) {
-        payload = { [this.levelKey]: levelVal } as Payload
-      }
-    } else {
-      payload = { [this.levelKey]: levelVal } as Payload
+    try {
+      payload = (this.base ? this.base() : {}) as Payload
+    } catch {
+      payload = {} as Payload
     }
+
+    payload[this.levelKey] = this.levelOutput === 'string' ? levelString : level
 
     if (this.fields) {
       Object.assign(payload, this.fields)

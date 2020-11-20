@@ -1,12 +1,6 @@
-import safeJsonStringify = require('safe-json-stringify')
+import safeStringify = require('safe-json-stringify')
 
-export function safeStringify(o: object): string {
-  try {
-    return JSON.stringify(o)
-  } catch (_) {
-    return safeJsonStringify(o)
-  }
-}
+export { safeStringify }
 
 export function jsonToStream(s: { write(o: unknown): unknown }) {
   return function outputToStream (p: object) {

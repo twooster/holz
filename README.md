@@ -9,7 +9,6 @@ It's smaller and faster than pretty much anything out there. That's because
 it doesn't do much: it's meant for situations where you're using containers
 and capturing all output via your containerization solution.
 
-
 ## Motivation
 
 There's a lot of loggers out there. Bunyan, Winston, Pino, log4js, ye old
@@ -18,7 +17,7 @@ console.log. None of them scratched my itch:
 * Fast
 * Built for Node
 * Simple, readable code
-* Only one dependency ([`safe-json-stringify`](https://www.npmjs.com/package/safe-json-stringify))
+* Minimal dependencies (only one: [`safe-json-stringify`](https://www.npmjs.com/package/safe-json-stringify))
 * TypeScript, and fully type-checked
 * Child loggers with fields
 * Custom and dynamic base objects
@@ -29,7 +28,7 @@ console.log. None of them scratched my itch:
 * No `v` (version), `hostname`, or `pid` fields by default; you can add them
   if you wish, but I don't need or want them. Create your own logger factory
   with `fields` set if you need 'em.
-* No extra cruft: No syslog, no file rotation, no stream management; just logging, stupid
+* No extra cruft: No syslog, no file rotation, no stream management. Just logging, stupid.
 
 ## Use
 
@@ -131,7 +130,6 @@ const logOpts: any = {
 const logger = createLogger(logOpts)
 // Definitely a TypeScript error:
 logger.info(...) // `info` not defined
-})
 ```
 
 Also, don't use the keys `child` or `setLevel` or `_log` as log levels,
@@ -177,8 +175,8 @@ equal or higher will be printed, all lower will not be printed).
 #### The dynamic log methods
 
 The logger sets up some dynamic logging methods based upon the `levels` you
-provide. So if you use the default levels, the logger will have `trace`, `debug`,
-`info`, `warn`, `error` and `fatal` on it.
+provide. If you just want to use the default levels, the logger will have
+`trace`, `debug`, `info`, `warn`, `error` and `fatal` on it.
 
 These functions will all have the same signature:
 
@@ -189,8 +187,9 @@ These functions will all have the same signature:
 
 Building up the logging payload looks like this:
 
-1. First, the `levelKey` property is set on the payload, with either the string
-   or numeric level, depending on the `levelOutput` setting
+1. First, the property determined by the `levelKey` setting is  set on the
+   payload, with either the string or numeric level, depending on the
+   `levelOutput` setting
 1. Then the result of `base()` (if set) is merged in
 1. Then the logger's `fields` are merged in
 1. Then, if the first parameter to the log message is an object,
@@ -230,13 +229,7 @@ printf-style msg formatting is provided by Node's
 That looks like this:
 
 ```javascript
-export const safeStringify = (o: Payload) => {
-  try {
-    return JSON.stringify(o)
-  } catch (_) {
-    return safeJsonStringify(o)
-  }
-}
+import safeStringify = require('safe-json-stringify')
 
 export const defaultOutput =
   (p: Payload) => process.stdout.write(safeStringify(p) + "\n")
@@ -273,8 +266,8 @@ These follow the Bunyan/Pino defaults:
 export const defaultLevels = {
   trace: 10,
   debug: 20,
-  info: 30,
-  warn: 40,
+  info:  30,
+  warn:  40,
   error: 50,
   fatal: 60,
 } as const
@@ -282,14 +275,15 @@ export const defaultLevels = {
 
 ##### Default `levelOutput`
 
-Like so:
+Again, this setting determines whether numeric or string levels are output
+in the field determined by the `levelKey` setting. It defaults to:
 
 ```javascript
 export const defaultLevelOutput = 'string' as const
 ```
 
-This means the default is that the level information (attached to the `levelKey`)
-field, is outputted as a string. Like `'info'` or `'error'`.
+This means that the level information is outputted as a string, e.g.,
+`'info'` or `'error'`.
 
 ##### Default `levelKey`
 
@@ -300,7 +294,7 @@ log-level information is:
 export const defaultLevelKey = 'level'
 ```
 
-Or maybe you expected `severity`. Oops.
+Another good option might be `'severity'`, but `'level'` is the default setting.
 
 
 ##### Default `messageKey`
@@ -340,59 +334,61 @@ checking. Check out how `createLogger` works to see that in action.
 
 ## I want microbenchmarks:
 
+**Updated 2020-11-20:**
+
 Sure ok, synchronous streaming to /dev/null, if you care about that sort of
 thing:
 
 ```
 Basic suite:
-benchBole*10000: 300.221ms
-benchBunyan*10000: 720.514ms
-benchWinston*10000: 599.488ms
-benchPino*10000: 296.013ms
-benchHolz*10000: 265.505ms
-benchBole*10000: 263.758ms
-benchBunyan*10000: 706.158ms
-benchWinston*10000: 541.225ms
-benchPino*10000: 299.892ms
-benchHolz*10000: 266.272ms
+benchBole*10000: 286.929ms
+benchBunyan*10000: 723.147ms
+benchWinston*10000: 562.207ms
+benchPino*10000: 294.553ms
+benchHolz*10000: 317.542ms
+benchBole*10000: 251.111ms
+benchBunyan*10000: 696.555ms
+benchWinston*10000: 521.008ms
+benchPino*10000: 331.736ms
+benchHolz*10000: 308.165ms
 
 Child logger suite:
-benchBunyan*10000: 822.318ms
-benchWinston*10000: 798.428ms
-benchPino*10000: 353.4ms
-benchHolz*10000: 369.783ms
-benchBunyan*10000: 824.804ms
-benchWinston*10000: 774.49ms
-benchPino*10000: 345.426ms
-benchHolz*10000: 369.118ms
+benchBunyan*10000: 806.566ms
+benchWinston*10000: 712.723ms
+benchPino*10000: 314.929ms
+benchHolz*10000: 459.154ms
+benchBunyan*10000: 803.362ms
+benchWinston*10000: 698.04ms
+benchPino*10000: 306.473ms
+benchHolz*10000: 438.295ms
 
 Child-child logger suite:
-benchBunyan*10000: 972.788ms
-benchWinston*10000: 1.089s
-benchPino*10000: 669.386ms
-benchHolz*10000: 475.625ms
-benchBunyan*10000: 978.817ms
-benchWinston*10000: 1.059s
-benchPino*10000: 670.877ms
-benchHolz*10000: 476.969ms
+benchBunyan*10000: 914.56ms
+benchWinston*10000: 998.138ms
+benchPino*10000: 616.487ms
+benchHolz*10000: 608.444ms
+benchBunyan*10000: 905.383ms
+benchWinston*10000: 1.018s
+benchPino*10000: 626.801ms
+benchHolz*10000: 623.279ms
 
 Dynamic child logger suite:
-benchBunyan*10000: 1.138s
-benchWinston*10000: 955.762ms
-benchPino*10000: 694.778ms
-benchHolz*10000: 490.67ms
-benchBunyan*10000: 1.138s
-benchWinston*10000: 963.158ms
-benchPino*10000: 697.533ms
-benchHolz*10000: 491.828ms
+benchBunyan*10000: 1.130s
+benchWinston*10000: 929.099ms
+benchPino*10000: 664.216ms
+benchHolz*10000: 572.834ms
+benchBunyan*10000: 1.122s
+benchWinston*10000: 921.739ms
+benchPino*10000: 659.804ms
+benchHolz*10000: 572.678ms
 
 Dynamic child-child logger suite:
-benchBunyan*10000: 1.526s
-benchWinston*10000: 2.011s
-benchPino*10000: 5.013s
-benchHolz*10000: 722.507ms
-benchBunyan*10000: 1.538s
-benchWinston*10000: 2.035s
-benchPino*10000: 5.092s
-benchHolz*10000: 731.108ms
+benchBunyan*10000: 1.479s
+benchWinston*10000: 1.893s
+benchPino*10000: 4.691s
+benchHolz*10000: 814.39ms
+benchBunyan*10000: 1.479s
+benchWinston*10000: 1.961s
+benchPino*10000: 4.672s
+benchHolz*10000: 790.767ms
 ```
