@@ -1,36 +1,35 @@
-const { bunyanLogger, winstonLogger, pinoLogger, holzLogger, boleLogger, bench } = require('./setup')
+const { createBole, createBunyan, createWinston, createPino, createHolz, benchIfMain } = require('./setup')
 
-const MAX = 20
+function prepare(t) {
+  const boleLogger = createBole()
+  const bunyanLogger = createBunyan()
+  const winstonLogger = createWinston()
+  const pinoLogger = createPino()
+  const holzLogger = createHolz()
 
-module.exports = bench([
-  function benchBole (cb) {
-    for (let i = 0; i < MAX; ++i) {
+  t.suite('basic', () => {
+    t.bench('bole', () => {
       boleLogger.info('hello world')
-    }
-    setImmediate(cb)
-  },
-  function benchBunyan (cb) {
-    for (let i = 0; i < MAX; ++i) {
+    })
+
+    t.bench('bunyan', () => {
       bunyanLogger.info('hello world')
-    }
-    setImmediate(cb)
-  },
-  function benchWinston (cb) {
-    for (let i = 0; i < MAX; ++i) {
+    })
+
+    t.bench('winston', () => {
       winstonLogger.log('info', 'hello world')
-    }
-    setImmediate(cb)
-  },
-  function benchPino (cb) {
-    for (let i = 0; i < MAX; ++i) {
-      pinoLogger.info('hello world')
-    }
-    setImmediate(cb)
-  },
-  function benchHolz (cb) {
-    for (let i = 0; i < MAX; ++i) {
-      holzLogger.info('hello world')
-    }
-    setImmediate(cb)
-  }
-], 10000)
+    })
+
+    t.bench('pino', () => {
+      pinoLogger.info({ a: 123 }, 'hello world')
+    })
+
+    t.bench('holz', () => {
+      holzLogger.info({ a: 123 }, 'hello world')
+    })
+  })
+}
+
+module.exports = prepare
+
+benchIfMain(module)

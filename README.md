@@ -15,6 +15,7 @@ There's a lot of loggers out there. Bunyan, Winston, Pino, log4js, ye old
 console.log. None of them scratched my itch:
 
 * Fast
+* Small
 * Built for Node
 * Simple, readable code
 * Minimal dependencies (only one: [`safe-json-stringify`](https://www.npmjs.com/package/safe-json-stringify))
@@ -28,7 +29,7 @@ console.log. None of them scratched my itch:
 * No `v` (version), `hostname`, or `pid` fields by default; you can add them
   if you wish, but I don't need or want them. Create your own logger factory
   with `fields` set if you need 'em.
-* No extra cruft: No syslog, no file rotation, no stream management. Just logging, stupid.
+* No extra cruft: No syslog, no file rotation, no stream management. Just stdout.
 
 ## Use
 
@@ -334,61 +335,71 @@ checking. Check out how `createLogger` works to see that in action.
 
 ## I want microbenchmarks:
 
-**Updated 2020-11-20:**
+**Updated 2021-07-26:**
 
 Sure ok, synchronous streaming to /dev/null, if you care about that sort of
 thing:
 
 ```
-Basic suite:
-benchBole*10000: 286.929ms
-benchBunyan*10000: 723.147ms
-benchWinston*10000: 562.207ms
-benchPino*10000: 294.553ms
-benchHolz*10000: 317.542ms
-benchBole*10000: 251.111ms
-benchBunyan*10000: 696.555ms
-benchWinston*10000: 521.008ms
-benchPino*10000: 331.736ms
-benchHolz*10000: 308.165ms
+          1,210,000 ops/sec > basic#bole (4.31x)
+            312,000 ops/sec > basic#bunyan (1.11x)
+            282,000 ops/sec > basic#winston (1x)
+            727,000 ops/sec > basic#pino (2.58x)
+            906,000 ops/sec > basic#holz (3.22x)
 
-Child logger suite:
-benchBunyan*10000: 806.566ms
-benchWinston*10000: 712.723ms
-benchPino*10000: 314.929ms
-benchHolz*10000: 459.154ms
-benchBunyan*10000: 803.362ms
-benchWinston*10000: 698.04ms
-benchPino*10000: 306.473ms
-benchHolz*10000: 438.295ms
+  Benches: 5
+  Fastest: basic#bole
+  Elapsed: 27.6s
 
-Child-child logger suite:
-benchBunyan*10000: 914.56ms
-benchWinston*10000: 998.138ms
-benchPino*10000: 616.487ms
-benchHolz*10000: 608.444ms
-benchBunyan*10000: 905.383ms
-benchWinston*10000: 1.018s
-benchPino*10000: 626.801ms
-benchHolz*10000: 623.279ms
+            285,000 ops/sec > child#bunyan (1.37x)
+            208,000 ops/sec > child#winston (1x)
+            807,000 ops/sec > child#pino (3.88x)
+            618,000 ops/sec > child#holz (2.97x)
 
-Dynamic child logger suite:
-benchBunyan*10000: 1.130s
-benchWinston*10000: 929.099ms
-benchPino*10000: 664.216ms
-benchHolz*10000: 572.834ms
-benchBunyan*10000: 1.122s
-benchWinston*10000: 921.739ms
-benchPino*10000: 659.804ms
-benchHolz*10000: 572.678ms
+  Benches: 4
+  Fastest: child#pino
+  Elapsed: 21.9s
 
-Dynamic child-child logger suite:
-benchBunyan*10000: 1.479s
-benchWinston*10000: 1.893s
-benchPino*10000: 4.691s
-benchHolz*10000: 814.39ms
-benchBunyan*10000: 1.479s
-benchWinston*10000: 1.961s
-benchPino*10000: 4.672s
-benchHolz*10000: 790.767ms
+            259,000 ops/sec > child child#bunyan (1.57x)
+            165,000 ops/sec > child child#winston (1x)
+            534,000 ops/sec > child child#holz (3.23x)
+            836,000 ops/sec > child child#pino (5.05x)
+
+  Benches: 4
+  Fastest: child child#pino
+  Elapsed: 22.2s
+
+            206,000 ops/sec > dynamic child#bunyan (1.18x)
+            174,000 ops/sec > dynamic child#winston (1x)
+            408,000 ops/sec > dynamic child#pino (2.34x)
+            480,000 ops/sec > dynamic child#holz (2.75x)
+
+  Benches: 4
+  Fastest: dynamic child#holz
+  Elapsed: 21.9s
+
+            150,000 ops/sec > dynamic child child#bunyan (4.21x)
+             92,900 ops/sec > dynamic child child#winston (2.61x)
+             35,600 ops/sec > dynamic child child#pino (1x)
+            331,000 ops/sec > dynamic child child#holz (9.28x)
+
+  Benches: 4
+  Fastest: dynamic child child#holz
+  Elapsed: 22.6s
 ```
+
+What does it mean? What's the difference between `child` and `dynamic child`?
+
+`child`: creates a child logger _once_, before the benchmark, and then logs to
+it for each execution.
+
+`dynamic-child`: for _each execution_, creates a child logger and then logs to
+it.
+
+I prefer to optimize for the latter case, since it represents how I suspect most
+people use child-loggers: attach a bit of context (e.g., for a web request), do
+a bit of logging, and then throw it away. Pino is particularly slow for this
+type of logging, especially nested.
+
+Note that Winston has a terrible memory leak and will crash the benchmark
+suites if run all together. Sadface.

@@ -1,5 +1,4 @@
 const fs = require('fs')
-const fastbench = require('fastbench')
 
 const holz = require('holz')
 const pino = require('pino')
@@ -7,9 +6,15 @@ const bunyan = require('bunyan')
 const bole = require('bole')
 const winston = require('winston')
 
-const devNull = fs.createWriteStream('/dev/null')
+const stream = require('stream')
 
-exports.bunyanLogger = bunyan.createLogger({
+const devNull = new stream.Writable({
+  write(_c, _e, cb) {
+    cb()
+  }
+})
+
+exports.createBunyan = () => bunyan.createLogger({
   name: 'bench',
   streams: [{
     level: 'trace',
@@ -17,14 +22,14 @@ exports.bunyanLogger = bunyan.createLogger({
   }]
 })
 
-exports.pinoLogger = pino({ level: 'trace' }, devNull)
+exports.createPino = () => pino({ level: 'trace' }, devNull)
 
-exports.holzLogger = holz.createLogger({
+exports.createHolz = () => holz.createLogger({
   level: 'trace',
   output: holz.jsonToStream(devNull)
 })
 
-exports.winstonLogger = winston.createLogger({
+exports.createWinston = () => winston.createLogger({
   level: 'silly',
   format: winston.format.json(),
   transports: [
@@ -39,13 +44,14 @@ bole.output([
 ])
 bole.setFastTime()
 
-exports.boleLogger = bole('test')
+exports.createBole = () => bole('test')
 
-exports.bench = (...args) => {
-  const run = fastbench(...args)
-  return async (n = 1) => {
-    for (let i = 0; i < n; ++i) {
-      await new Promise(resolve => run(resolve))
-    }
+exports.benchIfMain = function benchIfMain(mod) {
+  if (require.main === mod && typeof mod.exports === 'function') {
+    const { benchmark, PrettyReporter } = require('@c4312/matcha')
+    benchmark({
+      reporter: new PrettyReporter(process.stdout),
+      prepare: mod.exports
+    })
   }
 }

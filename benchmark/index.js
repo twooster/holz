@@ -1,18 +1,61 @@
-const basicSuite = require('./suite/basic.suite')
-const childSuite = require('./suite/child.suite')
-const childChildSuite = require('./suite/child-child.suite')
-const dynamicChildSuite = require('./suite/dynamic-child.suite')
-const dynamicChildChildSuite = require('./suite/dynamic-child-child.suite')
+const program = require('commander')
+const { benchmark, PrettyReporter, grepMiddleware } = require('@c4312/matcha')
+const { cpuProfiler } = require('@c4312/matcha/dist/middleware/cpu-profiler')
+const { writeFile } = require('fs');
 
-;(async () => {
-  console.log('Basic suite:')
-  await basicSuite(2)
-  console.log('\nChild logger suite:')
-  await childSuite(2)
-  console.log('\nChild-child logger suite:')
-  await childChildSuite(2)
-  console.log('\nDynamic child logger suite:')
-  await dynamicChildSuite(2)
-  console.log('\nDynamic child-child logger suite:')
-  await dynamicChildChildSuite(2)
-})()
+const suites = [
+  require('./suite/basic.suite'),
+  require('./suite/child.suite'),
+  require('./suite/child-child.suite'),
+  require('./suite/dynamic-child.suite'),
+  require('./suite/dynamic-child-child.suite'),
+]
+
+const args = program
+  .name('benchmark-holz')
+  .option('-g, --grep <pattern>', 'Run a subset of benchmarks', '')
+  .option(
+    '--cpu-profile [pattern]',
+    'Run on all tests, or those matching the regex. Saves a .cpuprofile file that can be opened in the Chrome devtools.',
+  )
+  .parse(process.argv)
+  .opts()
+
+
+async function main() {
+  const middleware = [];
+  if (args.grep) {
+    middleware.push(grepMiddleware(new RegExp(args.grep, 'i')));
+  }
+
+  if (args.cpuProfile === true) {
+    middleware.push(cpuProfiler(writeProfile));
+  } else if (args.cpuProfile) {
+    middleware.push(cpuProfiler(writeProfile, new RegExp(args.cpuProfile, 'i')));
+  }
+
+
+  for (const prepare of suites) {
+    const reporter = new PrettyReporter(process.stdout)
+    await benchmark({
+      middleware,
+      reporter,
+      prepare,
+    });
+    if (global.gc) {
+      global.gc();
+    }
+  }
+
+}
+
+function writeProfile(bench, profile) {
+  const safeName = bench.name.replace(/[^a-z0-9]/gi, '-');
+  return new Promise((resolve, reject) =>
+    writeFile(`${safeName}.cpuprofile`, JSON.stringify(profile), (err, value) => {
+      err ? reject(err) : resolve(value)
+    })
+  )
+}
+
+main()
