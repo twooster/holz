@@ -22,7 +22,7 @@ export type LoggerOpts<T extends LevelMapping> = {
   output: (s: Payload) => unknown
 }
 
-export type ChildOpts<T extends LevelMapping> = Exclude<Partial<LoggerOpts<T>>, 'levels' | 'fields'>
+export type ChildOpts<T extends LevelMapping> = Omit<Partial<LoggerOpts<T>>, 'levels' | 'fields'>
 
 const hop = Object.prototype.hasOwnProperty
 
