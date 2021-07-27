@@ -1,6 +1,6 @@
 {
   "name": "holz",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Holz: A fast, minimal TypeScript logger",
   "main": "dist/index.js",
   "scripts": {
