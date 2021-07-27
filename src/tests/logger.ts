@@ -76,7 +76,7 @@ test('transform works', t => {
 
   td.when(transform({ a: 1 })).thenThrow(new Error('oh no'))
   l.info({ a: 1 }, "msg")
-  td.verify(output({ l: "info", m: "msg", [levelStringSym]: "info", [levelNumberSym]: infoNum}))
+  td.verify(output({ l: "info", a: 1, m: "msg", [levelStringSym]: "info", [levelNumberSym]: infoNum}))
 
   t.pass()
 })

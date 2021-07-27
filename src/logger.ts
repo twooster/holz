@@ -118,41 +118,53 @@ export class BaseLogger<T extends LevelMapping> {
 
     if (typeof msgOrObj === 'string') {
       if (args.length > 0) {
+        // With args to format: _log(_, _, 'foo %s', 'bar')
         try {
           payload[this.messageKey] = this.format(msgOrObj, ...args)
         } catch(_) {
+          // in the case of an error, maintain as much as we can
           payload[this.messageKey] = [msgOrObj, ...args]
         }
       } else {
+        // No args to format: _log(_, _, 'foo')
         payload[this.messageKey] = msgOrObj
       }
     } else {
       if (msgOrObj !== null && msgOrObj !== undefined) {
+        // _log(_, _, { a: 1, b: 2 }, ...)
         try {
           Object.assign(payload, this.transform(msgOrObj))
         } catch(_) {
-          // noop
+          // in the case of an error, maintain as much as we can
+          Object.assign(payload, msgOrObj)
         }
       }
+
       if (args.length > 1) {
+        // _log(_, _, { a: 1, b: 2 }, 'foo %s', 'bar')
         try {
           payload[this.messageKey] = this.format(...args as [string, ...unknown[]])
         } catch(_) {
+          // in the case of an error, maintain as much as we can
           payload[this.messageKey] = args
         }
       } else if (args.length > 0) {
+        // _log(_, _, { a: 1, b: 2 }, 'foo')
         payload[this.messageKey] = args[0]
       }
     }
 
-    const ft = this.fieldTransforms
-    if (ft) {
-      for (const k in payload) {
-        if (hop.call(payload, k) && hop.call(ft, k) && typeof ft[k] === 'function') {
-          try {
-            payload[k] = ft[k].call(this, payload[k], k)
-          } catch (_) {
-            // noop
+    const transforms = this.fieldTransforms
+    if (transforms) {
+      for (const fieldName in transforms) {
+        if (hop.call(transforms, fieldName)) {
+          const transform = transforms[fieldName]
+          if (typeof transform === 'function' && hop.call(payload, fieldName)) {
+            try {
+              payload[fieldName] = transform.call(this, payload[fieldName], fieldName)
+            } catch (_) {
+              // noop
+            }
           }
         }
       }
