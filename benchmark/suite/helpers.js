@@ -6,7 +6,7 @@ const winston = require('winston')
 
 const stream = require('stream')
 
-const devNull = new stream.Writable({
+const createDevNull = () => new stream.Writable({
   write(_chunk, _encoding, cb) {
     cb(null)
   },
@@ -19,15 +19,15 @@ exports.createBunyan = () => bunyan.createLogger({
   name: 'bench',
   streams: [{
     level: 'trace',
-    stream: devNull
+    stream: createDevNull()
   }]
 })
 
-exports.createPino = () => pino({ level: 'trace' }, devNull)
+exports.createPino = () => pino({ level: 'trace' }, createDevNull())
 
 exports.createHolz = () => holz.createLogger({
   level: 'trace',
-  output: holz.jsonToStream(devNull)
+  output: holz.jsonToStream(createDevNull())
 })
 
 exports.createWinston = () => winston.createLogger({
@@ -35,13 +35,13 @@ exports.createWinston = () => winston.createLogger({
   format: winston.format.json(),
   transports: [
     new winston.transports.Stream({
-      stream: devNull
+      stream: createDevNull()
     })
   ]
 })
 
 bole.output([
-  { level: 'debug', stream: devNull }
+  { level: 'debug', stream: createDevNull() }
 ])
 bole.setFastTime()
 
