@@ -1,5 +1,3 @@
-const fs = require('fs')
-
 const holz = require('holz')
 const pino = require('pino')
 const bunyan = require('bunyan')
@@ -9,7 +7,10 @@ const winston = require('winston')
 const stream = require('stream')
 
 const devNull = new stream.Writable({
-  write(_c, _e, cb) {
+  write(_chunk, _encoding, cb) {
+    cb()
+  },
+  writev(_chunks, cb) {
     cb()
   }
 })

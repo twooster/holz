@@ -2,13 +2,14 @@
 
 # Holz, a fast, minimal TypeScript logger
 
-Holz is a logging library for those situations where you want fast, simple,
-and extensible.
+Holz is a logging library if you want a fast, simple, JSON-to-stdout logger.
 
 It's smaller and faster than pretty much anything out there. That's because
-it doesn't do much: it's meant for situations where you're using containers
-and capturing all output via your containerization solution.
+it doesn't do much. There's no file rotation, there's no syslog, there's
+only stdout. It's assumed you have an external program handling all of
+the log file management, replication, etc.
 
+That said, it's configurable and easy to use. Enjoy.
 ## Motivation
 
 There's a lot of loggers out there. Bunyan, Winston, Pino, log4js, ye old
@@ -21,6 +22,7 @@ console.log. None of them scratched my itch:
 * Minimal dependencies (only one: [`safe-json-stringify`](https://www.npmjs.com/package/safe-json-stringify))
 * TypeScript, and fully type-checked
 * Child loggers with fields
+* Splat parameters, etc
 * Custom and dynamic base objects
 * Custom log levels (w/ type checking)
 * Custom per-field formatters
@@ -37,13 +39,30 @@ console.log. None of them scratched my itch:
 import { createLogger } from 'holz'
 
 const logger = createLogger()
+
+// Log a simple message:
 logger.info('boo!')
 // stdout: {"level":"info","msg":"boo!"}
 
-logger.child({ user: "user1" }).warn({ a: 1 }, "oh hi %s!", "john")
+// Log a json object:
+logger.info({ msg: 'oh hi!', user: 'user1' })
+// stdout: {"level":"info","msg":"oh hi!","user":"user1"}
+
+// Log a json object with a message, and formatted splat
+logger.info({ user: 'user1' }, 'oh hi %s!', 'john')
+// stdout: {"level":"info","msg":"oh hi john!","user":"user1"}
+
+// Create a child logger
+const childLogger = logger.child({ user: 'user1' })
+childLogger.warn({ a: 1 }, 'oh hi %s!', 'john')
 // stdout: {"level":"warn","a":1,"msg":"oh hi john!"}
 
-logger.error(new Error("Oh no!"))
+const errorChildLogger = logger.child({}, { level: 'error' })
+errorChildLogger.info("you won't see this message")
+// not logged because 'info' level is lower than 'error'
+
+// Log an error (automatically transformed):
+logger.error(new Error('Oh no!'))
 // stdout: {"level":"error","error":{"message":"Oh no!","stack":"...",...}}
 ```
 
@@ -188,7 +207,7 @@ These functions will all have the same signature:
 
 Building up the logging payload looks like this:
 
-1. First, the property determined by the `levelKey` setting is  set on the
+1. First, the property determined by the `levelKey` setting is set on the
    payload, with either the string or numeric level, depending on the
    `levelOutput` setting
 1. Then the result of `base()` (if set) is merged in
@@ -399,7 +418,8 @@ it.
 I prefer to optimize for the latter case, since it represents how I suspect most
 people use child-loggers: attach a bit of context (e.g., for a web request), do
 a bit of logging, and then throw it away. Pino is particularly slow for this
-type of logging, especially nested.
+type of logging, especially nested more than once: you pay a large cost
+for instantiating a child logger, and a lower cost for each logging call.
 
 Note that Winston has a terrible memory leak and will crash the benchmark
 suites if run all together. Sadface.
