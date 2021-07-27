@@ -8,10 +8,10 @@ const stream = require('stream')
 
 const devNull = new stream.Writable({
   write(_chunk, _encoding, cb) {
-    cb()
+    cb(null)
   },
   writev(_chunks, cb) {
-    cb()
+    cb(null)
   }
 })
 

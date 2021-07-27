@@ -1,4 +1,4 @@
-const { createBunyan, createWinston, createPino, createHolz, benchIfMain } = require('./setup')
+const { createBunyan, createWinston, createPino, createHolz, benchIfMain } = require('./helpers')
 
 function prepare(t) {
   const bunyanChild = createBunyan().child({ wizzle: "wuzzle", sizzle: "sazzle", dizzle: "dazzle" })
@@ -7,20 +7,20 @@ function prepare(t) {
   const holzChild = createHolz().child({ wizzle: "wuzzle", sizzle: "sazzle", dizzle: "dazzle" })
 
   t.suite('child', () => {
-    t.bench('bunyan', () => {
-      bunyanChild.info('hello world')
-    })
-
-    t.bench('winston', () => {
-      winstonChild.log('info', 'hello world')
+    t.bench('holz', () => {
+      holzChild.info({ a: 123 }, 'hello world')
     })
 
     t.bench('pino', () => {
       pinoChild.info({ a: 123 }, 'hello world')
     })
 
-    t.bench('holz', () => {
-      holzChild.info({ a: 123 }, 'hello world')
+    t.bench('bunyan', () => {
+      bunyanChild.info({ a: 123 }, 'hello world')
+    })
+
+    t.bench('winston', () => {
+      winstonChild.info('hello world', { a: 123 })
     })
   })
 }

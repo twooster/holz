@@ -354,57 +354,61 @@ checking. Check out how `createLogger` works to see that in action.
 
 ## I want microbenchmarks:
 
-**Updated 2021-07-26:**
+**Updated 2021-07-27:**
 
 Sure ok, synchronous streaming to /dev/null, if you care about that sort of
 thing:
 
 ```
-          1,210,000 ops/sec > basic#bole (4.31x)
-            312,000 ops/sec > basic#bunyan (1.11x)
-            282,000 ops/sec > basic#winston (1x)
-            727,000 ops/sec > basic#pino (2.58x)
-            906,000 ops/sec > basic#holz (3.22x)
+          1,010,000 ops/sec > basic#holz (4.49x)
+            713,000 ops/sec > basic#pino (3.16x)
+            872,000 ops/sec > basic#bole (3.87x)
+            282,000 ops/sec > basic#bunyan (1.25x)
+            226,000 ops/sec > basic#winston (1x)
 
   Benches: 5
-  Fastest: basic#bole
-  Elapsed: 27.6s
+  Fastest: basic#holz
+  Elapsed: 27.1s
 
-            285,000 ops/sec > child#bunyan (1.37x)
-            208,000 ops/sec > child#winston (1x)
-            807,000 ops/sec > child#pino (3.88x)
-            618,000 ops/sec > child#holz (2.97x)
+
+            713,000 ops/sec > child#holz (3.76x)
+            888,000 ops/sec > child#pino (4.69x)
+            262,000 ops/sec > child#bunyan (1.38x)
+            189,000 ops/sec > child#winston (1x)
 
   Benches: 4
   Fastest: child#pino
   Elapsed: 21.9s
 
-            259,000 ops/sec > child child#bunyan (1.57x)
-            165,000 ops/sec > child child#winston (1x)
-            534,000 ops/sec > child child#holz (3.23x)
-            836,000 ops/sec > child child#pino (5.05x)
+
+            557,000 ops/sec > child child#holz (3.56x)
+            893,000 ops/sec > child child#pino (5.71x)
+            232,000 ops/sec > child child#bunyan (1.48x)
+            156,000 ops/sec > child child#winston (1x)
 
   Benches: 4
   Fastest: child child#pino
-  Elapsed: 22.2s
+  Elapsed: 21.9s
 
-            206,000 ops/sec > dynamic child#bunyan (1.18x)
-            174,000 ops/sec > dynamic child#winston (1x)
-            408,000 ops/sec > dynamic child#pino (2.34x)
-            480,000 ops/sec > dynamic child#holz (2.75x)
+
+            516,000 ops/sec > dynamic child#holz (2.66x)
+            461,000 ops/sec > dynamic child#pino (2.37x)
+            194,000 ops/sec > dynamic child#bunyan (1x)
+            195,000 ops/sec > dynamic child#winston (1.01x)
 
   Benches: 4
   Fastest: dynamic child#holz
-  Elapsed: 21.9s
+  Elapsed: 22s
 
-            150,000 ops/sec > dynamic child child#bunyan (4.21x)
-             92,900 ops/sec > dynamic child child#winston (2.61x)
-             35,600 ops/sec > dynamic child child#pino (1x)
-            331,000 ops/sec > dynamic child child#holz (9.28x)
+
+            368,000 ops/sec > dynamic child child#holz (8.74x)
+             42,000 ops/sec > dynamic child child#pino (1x)
+            143,000 ops/sec > dynamic child child#bunyan (3.41x)
+             96,300 ops/sec > dynamic child child#winston (2.29x)
 
   Benches: 4
   Fastest: dynamic child child#holz
-  Elapsed: 22.6s
+  Elapsed: 22s
 ```
 
 What does it mean? What's the difference between `child` and `dynamic child`?

@@ -1,4 +1,4 @@
-const { createBunyan, createWinston, createPino, createHolz, benchIfMain } = require('./setup')
+const { createBunyan, createWinston, createPino, createHolz, benchIfMain } = require('./helpers')
 
 function prepare(t) {
   const bunyanLogger = createBunyan()
@@ -7,6 +7,20 @@ function prepare(t) {
   const holzLogger = createHolz()
 
   t.suite('dynamic child child', () => {
+    t.bench('holz', () => {
+      holzLogger
+        .child({ wizzle: "wuzzle", sizzle: "sazzle", dizzle: "dazzle" })
+        .child({ gaggle: "google", dingle: "dangle", foofy: "toofy" })
+        .info({ msg: 'hello world' })
+    })
+
+    t.bench('pino', () => {
+      pinoLogger
+        .child({ wizzle: "wuzzle", sizzle: "sazzle", dizzle: "dazzle" })
+        .child({ gaggle: "google", dingle: "dangle", foofy: "toofy" })
+        .info({ msg: 'hello world' })
+    })
+
     t.bench('bunyan', () => {
       bunyanLogger
         .child({ wizzle: "wuzzle", sizzle: "sazzle", dizzle: "dazzle" })
@@ -19,20 +33,6 @@ function prepare(t) {
         .child({ wizzle: "wuzzle", sizzle: "sazzle", dizzle: "dazzle" })
         .child({ gaggle: "google", dingle: "dangle", foofy: "toofy" })
         .log('info', 'hello world')
-    })
-
-    t.bench('pino', () => {
-      pinoLogger
-        .child({ wizzle: "wuzzle", sizzle: "sazzle", dizzle: "dazzle" })
-        .child({ gaggle: "google", dingle: "dangle", foofy: "toofy" })
-        .info({ msg: 'hello world' })
-    })
-
-    t.bench('holz', () => {
-      holzLogger
-        .child({ wizzle: "wuzzle", sizzle: "sazzle", dizzle: "dazzle" })
-        .child({ gaggle: "google", dingle: "dangle", foofy: "toofy" })
-        .info({ msg: 'hello world' })
     })
   })
 }

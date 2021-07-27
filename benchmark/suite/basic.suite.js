@@ -1,4 +1,4 @@
-const { createBole, createBunyan, createWinston, createPino, createHolz, benchIfMain } = require('./setup')
+const { createBole, createBunyan, createWinston, createPino, createHolz, benchIfMain } = require('./helpers')
 
 function prepare(t) {
   const boleLogger = createBole()
@@ -8,24 +8,24 @@ function prepare(t) {
   const holzLogger = createHolz()
 
   t.suite('basic', () => {
-    t.bench('bole', () => {
-      boleLogger.info('hello world')
-    })
-
-    t.bench('bunyan', () => {
-      bunyanLogger.info('hello world')
-    })
-
-    t.bench('winston', () => {
-      winstonLogger.log('info', 'hello world')
+    t.bench('holz', () => {
+      holzLogger.info({ a: 123 }, 'hello world')
     })
 
     t.bench('pino', () => {
       pinoLogger.info({ a: 123 }, 'hello world')
     })
 
-    t.bench('holz', () => {
-      holzLogger.info({ a: 123 }, 'hello world')
+    t.bench('bole', () => {
+      boleLogger.info({ a: 123 }, 'hello world')
+    })
+
+    t.bench('bunyan', () => {
+      bunyanLogger.info({ a: 123 }, 'hello world')
+    })
+
+    t.bench('winston', () => {
+      winstonLogger.info('hello world', { a: 123 })
     })
   })
 }
