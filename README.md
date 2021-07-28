@@ -10,28 +10,24 @@ only stdout. It's assumed you have an external program handling all of
 the log file management, replication, etc.
 
 That said, it's configurable and easy to use. Enjoy.
+
 ## Motivation
 
 There's a lot of loggers out there. Bunyan, Winston, Pino, log4js, ye old
 console.log. None of them scratched my itch:
 
-* Fast
-* Small
-* Built for Node
-* Simple, readable code
+* Fast, small, simple, readable code
+* TypeScript, and fully type-checked, including custom levels
 * Minimal dependencies (only one: [`safe-json-stringify`](https://www.npmjs.com/package/safe-json-stringify))
-* TypeScript, and fully type-checked
 * Child loggers with fields
-* Splat parameters, etc
-* Custom and dynamic base objects
-* Custom log levels (w/ type checking)
-* Custom per-field formatters
+* Customizable dynamic base objects and static base-fields
+* Pre- and post-processing of log objects
+* Customizable level and message attribute names
 * Custom output functions
-* Custom level and message keys
 * No `v` (version), `hostname`, or `pid` fields by default; you can add them
   if you wish, but I don't need or want them. Create your own logger factory
   with `fields` set if you need 'em.
-* No extra cruft: No syslog, no file rotation, no stream management. Just stdout.
+* No extra cruft: No syslog, no file rotation, no stream management. Out of the box: Just JSON to stdout.
 
 ## Use
 
@@ -44,26 +40,26 @@ const logger = createLogger()
 logger.info('boo!')
 // stdout: {"level":"info","msg":"boo!"}
 
-// Log a json object:
-logger.info({ msg: 'oh hi!', user: 'user1' })
+// Log with a json object:
+logger.info('oh hi!', { user: 'user1' })
 // stdout: {"level":"info","msg":"oh hi!","user":"user1"}
 
-// Log a json object with a message, and formatted splat
-logger.info({ user: 'user1' }, 'oh hi %s!', 'john')
-// stdout: {"level":"info","msg":"oh hi john!","user":"user1"}
+// The message key will be overridden if set on the json object
+logger.info('oh hi!', { user: 'user1', msg: 'will be overridden' })
+// stdout: {"level":"info","msg":"oh hi!","user":"user1"}
 
 // Create a child logger
 const childLogger = logger.child({ user: 'user1' })
-childLogger.warn({ a: 1 }, 'oh hi %s!', 'john')
-// stdout: {"level":"warn","a":1,"msg":"oh hi john!"}
+childLogger.warn('oh hi!', { a: 1 })
+// stdout: {"level":"warn","a":1,"msg":"oh hi!"}
 
 const errorChildLogger = logger.child({}, { level: 'error' })
 errorChildLogger.info("you won't see this message")
 // not logged because 'info' level is lower than 'error'
 
 // Log an error (automatically transformed):
-logger.error(new Error('Oh no!'))
-// stdout: {"level":"error","error":{"message":"Oh no!","stack":"...",...}}
+logger.error('there was an error', new Error('Oh no!'))
+// stdout: {"level":"error","msg":"there was an error","error":{"message":"Oh no!","stack":"...",...}}
 ```
 
 Simple.
@@ -96,8 +92,8 @@ type CreateLoggerOpts = {
   // defaults to 'level'
   levelKey: string
 
-  // Whether the numeric or string level will be put in the key, defaults to 'string'
-  levelOutput: 'string' | 'number'
+  // Whether the numeric or string level will be put in the key, defaults to `false`
+  numericLevel: boolean
 
   // Key in the payload that will receive the log message; defaults to 'msg'
   messageKey: string
@@ -107,14 +103,16 @@ type CreateLoggerOpts = {
   // be called.
   format: (msg: string, ...args: unknown[]) => string
 
-  // Optional: A function that will be called if there is an object passed before
-  // the message parameter when logging, to transform that object into something
-  // a bit more useful (like enumerating the fields in an error).
-  transform: (o: object) => object
+  // Optional: If an object is provided as the second paramter to a log
+  // function, `preprocess` will be called on this object first. The return
+  // value will be  merged into the logging object (partially built from `base`
+  // and `fields` already).
+  preprocess: (o: object) => object
 
-  // Optional: Transformations to apply to individual fields in the payload,
-  // replacing the value of given keys by the result of the supplied function
-  fieldTransforms: { [k in string | number]: (value: unknown, key: string) => unknown }
+  // Optional: Optionally post-process the log object before it's finalized.
+  // The payload will be replaced with whatever value is returned by this
+  // function. If an object isn't returned, then the log will not go through.
+  postprocess: (o: object) => object | void
 
   // Optional: Function that outputs a log line; defaults to writing JSON to stdout
   output: (s: Payload) => void
@@ -146,9 +144,8 @@ const logOpts: any = {
   },
   level: 'info'
 }
-// Probably a typescript error:
 const logger = createLogger(logOpts)
-// Definitely a TypeScript error:
+// Results in a TypeScript error:
 logger.info(...) // `info` not defined
 ```
 
@@ -174,8 +171,8 @@ through the child. These are merged with the parent logger's fields.
 
 1. `fields` can't be set (because that's what `fields` argument is, silly)
 1. `levels` can't be set -- they're locked in place from the parent logger
-1. `fieldTransforms` are merged with the parent field transforms
-1. `base` overrides the parent's `base` (has no merging logic)
+1.  There is no merging logic if you override `base`, `preprocess` or
+    `postprocess`
 
 All other fields can be set and work as expected.
 
@@ -201,29 +198,25 @@ provide. If you just want to use the default levels, the logger will have
 These functions will all have the same signature:
 
 ```javascript
-(msg: string, ...fmtArgs: unknown[]) => void
-(obj: object, msg?: string, ...fmtArgs: unknown[]) => void
+type LogMethod = ((msg: string, obj?: object) => void)
 ```
 
 Building up the logging payload looks like this:
 
-1. First, the property determined by the `levelKey` setting is set on the
-   payload, with either the string or numeric level, depending on the
-   `levelOutput` setting
-1. Then the result of `base()` (if set) is merged in
-1. Then the logger's `fields` are merged in
-1. Then, if the first parameter to the log message is an object,
-   that object is passed through `transform`; the result is merged
-   into the payload
-1. Then the `messageKey` property is set on the payload; if no `fmtArgs` are
-   provided, then simply the `msg` is used, otherwise the message key is set
-   to the results of `format(msg, ...fmtArgs)`. The default `format` function
-   is `util.format`, which allows for printf-style printing.
-1. Then, if there are any field transforms, these are applied to each matching
-   named field
-1. Then two non-enumerable symbol fields are set containing the original
-   numeric and string levels (see `levelStringSym` and `levelNumberSym` exports)
-   for processing of downstream output, if you need.
+1. First, the payload is built from the `base`, if provided, or an empty
+   object otherwise
+1. If `fields` are defined, they are merged into the payload
+1. If an object was passed in as the second parameter, then it is
+   `preprocessed` (if used), and merged into the payload
+1. The message and the level is set on the payload, according to
+   `messageKey` and `levelKey`
+1. If `postprocess` is set, the payload is postprocessed and replaced,
+   or the log discarded if `postprocess` returns a falsy value. Postprocessing
+   could remove all previously set attributes.
+1. The non-enumerable symbol fields are set containing the original
+   numeric and string levels (see `levelStringSym` and `levelNumberSym` exports),
+   as well as the message (`messageSym`) for processing of downstream output,
+   if you need.
 
 Finally, after all of that, the message payload is passed to the `output`
 function.
@@ -232,33 +225,27 @@ This whole process has a whole lot of `try`/`catch` around everything, so
 it should never blow up. Since the primary purpose of logging is to get
 information out of a system, the log method tries to do its best to
 output the data you've provided, through all the transforms you've provided,
-and will generally fall back to sane defaults (e.g., untransformed fields)
-if it encounters errors.
+and will generally fall back to sane defaults if it encounters errors.
 
 #### The defaults
 
 A few defaults are provided out of the box. These are:
 
-##### Default `format` function
-
-printf-style msg formatting is provided by Node's
-[util.format](https://nodejs.org/api/util.html#util_util_format_format_args).
-
 ##### Default `output` function
 
-That looks like this:
+That looks something like this:
 
 ```javascript
 import safeStringify = require('safe-json-stringify')
 
 export const defaultOutput =
-  (p: Payload) => process.stdout.write(safeStringify(p) + "\n")
+  (p: Payload) => console.log(safeStringify(p))
 ```
 
 If you want to use your own, you can re-import `safeStringify` from
 this lib to access that dependency.
 
-##### Default `transform` function
+##### Default `preprocess` function
 
 That looks like this:
 
@@ -268,10 +255,9 @@ export function defaultTransform(o: object) {
 }
 ```
 
-`transformError` basically takes any Error-alike object (has a `.stack`
-property), and makes it into something a bit more palatable to
-`JSON.stringify`. (It also unwinds the error `cause` if you're using
-[verrors](https://github.com/joyent/node-verror).)
+`transformError` basically takes any Error instance and makes it into something
+a bit more palatable to `JSON.stringify`. (It also unwinds the error `cause` if
+you're using [verrors](https://github.com/joyent/node-verror).)
 
 You can import `transformError` if you like and build your own transform
 function -- like maybe detecting and formatting HTTP Request/Response objects.
@@ -293,13 +279,13 @@ export const defaultLevels = {
 } as const
 ```
 
-##### Default `levelOutput`
+##### Default `numericLevel`
 
 Again, this setting determines whether numeric or string levels are output
 in the field determined by the `levelKey` setting. It defaults to:
 
 ```javascript
-export const defaultLevelOutput = 'string' as const
+export const defaultNumericLevel = false
 ```
 
 This means that the level information is outputted as a string, e.g.,
@@ -333,13 +319,13 @@ export const defaultLevel = defaultLevels['info']
 
 The default log level is `'info'`.
 
-##### Default `fieldTransforms`
+##### Default `postprocess``
 
 ```javascript
-export const defaultFieldTransforms = {
+export const defaultPostProcess = transform({
   err: transformError,
   error: transformError,
-}
+})
 ```
 
 Again, as a greatest-common-denominator, we provide some field transforms on

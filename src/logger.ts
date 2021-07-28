@@ -1,9 +1,11 @@
 export const levelStringSym: unique symbol = Symbol('levelString')
 export const levelNumberSym: unique symbol = Symbol('levelNumber')
+export const messageSym: unique symbol = Symbol('message')
 
 export type Payload = { [k in PropertyKey]: unknown } & {
   [levelNumberSym]: number
   [levelStringSym]: string
+  [messageSym]: string
 }
 
 export type LevelMapping = { [k in string]: number }
@@ -11,45 +13,46 @@ export type LevelMapping = { [k in string]: number }
 export type LoggerOpts<T extends LevelMapping> = {
   level: keyof T | T[keyof T]
   levels: T
-  levelOutput: 'string' | 'number'
+  numericLevel: boolean
   base?: () => object
   fields?: object
   levelKey: string
   messageKey: string
-  format: (msg: string, ...args: unknown[]) => string
-  transform: (o: object) => object
-  fieldTransforms?: { [k in string | number]: (v: unknown, k: string) => unknown }
+  preprocess: ProcessFunction
+  postprocess: ProcessFunction
   output: (s: Payload) => unknown
 }
 
+export type ProcessFunction = (obj: object) => object | void
+
 export type ChildOpts<T extends LevelMapping> = Omit<Partial<LoggerOpts<T>>, 'levels' | 'fields'>
+
+export type LogObj = { [k in string | symbol]: unknown }
 
 const hop = Object.prototype.hasOwnProperty
 
 export class BaseLogger<T extends LevelMapping> {
   levels: T
-  level: number = 0
-  levelOutput: 'number' | 'string'
+  level!: number
+  numericLevel: boolean
   base?: () => object
   fields?: object
   levelKey: string
   messageKey: string
-  format: (msg: string, ...args: unknown[]) => string
-  transform: (o: object) => object
-  fieldTransforms?: { [k in string | number]: (v: unknown, k: string) => unknown }
+  preprocess?: ProcessFunction
+  postprocess?: ProcessFunction
   output: (s: Payload) => unknown
 
   constructor(opts: LoggerOpts<T>) {
     this.levels = opts.levels
     this.base = opts.base
     this.fields = opts.fields
-    this.levelOutput = opts.levelOutput
+    this.numericLevel = opts.numericLevel
     this.levelKey = opts.levelKey
     this.messageKey = opts.messageKey
-    this.format = opts.format
     this.output = opts.output
-    this.transform = opts.transform
-    this.fieldTransforms = opts.fieldTransforms
+    this.preprocess = opts.preprocess
+    this.postprocess = opts.postprocess
 
     this.setLevel(opts.level)
 
@@ -82,96 +85,65 @@ export class BaseLogger<T extends LevelMapping> {
       fields: this.fields
         ? { ...this.fields, ...fields }
         : fields,
-      levelOutput: opts.levelOutput || this.levelOutput,
+      numericLevel: opts.numericLevel ?? this.numericLevel,
       levelKey: opts.levelKey ?? this.levelKey,
       messageKey: opts.messageKey ?? this.messageKey,
-      format: opts.format || this.format,
+      preprocess: opts.preprocess || this.preprocess,
+      postprocess: opts.postprocess || this.postprocess,
       output: opts.output || this.output,
-      transform: opts.transform || this.transform,
-      fieldTransforms: opts.fieldTransforms
-        ? this.fieldTransforms
-          ? { ...this.fieldTransforms, ...opts.fieldTransforms }
-          : opts.fieldTransforms
-        : this.fieldTransforms
     } as LoggerOpts<T>) as Logger<T>
   }
 
-  private _log(level: number, levelString: string, obj: object, msg?: string, ...args: unknown[]): void
-  private _log(level: number, levelString: string, msg: string, ...args: unknown[]): void
-  private _log(level: number, levelString: string, msgOrObj: object | string, ...args: unknown[]): void {
+  private _log(level: number, levelString: string, msg: string, obj?: object): void {
     if (level < this.level) {
       return
     }
 
     let payload: Payload
-    try {
-      payload = (this.base ? this.base() : {}) as Payload
-    } catch {
+    if (this.base) {
+      try {
+        payload = this.base() as Payload
+      } catch {
+        payload = {} as Payload
+      }
+    } else {
       payload = {} as Payload
     }
-
-    payload[this.levelKey] = this.levelOutput === 'string' ? levelString : level
 
     if (this.fields) {
       Object.assign(payload, this.fields)
     }
 
-    if (typeof msgOrObj === 'string') {
-      if (args.length > 0) {
-        // With args to format: _log(_, _, 'foo %s', 'bar')
+    if (obj) {
+      let merge: object | void = obj
+      if (this.preprocess) {
         try {
-          payload[this.messageKey] = this.format(msgOrObj, ...args)
+          merge = this.preprocess(obj)
         } catch(_) {
-          // in the case of an error, maintain as much as we can
-          payload[this.messageKey] = [msgOrObj, ...args]
-        }
-      } else {
-        // No args to format: _log(_, _, 'foo')
-        payload[this.messageKey] = msgOrObj
-      }
-    } else {
-      if (msgOrObj !== null && msgOrObj !== undefined) {
-        // _log(_, _, { a: 1, b: 2 }, ...)
-        try {
-          Object.assign(payload, this.transform(msgOrObj))
-        } catch(_) {
-          // in the case of an error, maintain as much as we can
-          Object.assign(payload, msgOrObj)
+          // noop
         }
       }
-
-      if (args.length > 1) {
-        // _log(_, _, { a: 1, b: 2 }, 'foo %s', 'bar')
-        try {
-          payload[this.messageKey] = this.format(...args as [string, ...unknown[]])
-        } catch(_) {
-          // in the case of an error, maintain as much as we can
-          payload[this.messageKey] = args
-        }
-      } else if (args.length > 0) {
-        // _log(_, _, { a: 1, b: 2 }, 'foo')
-        payload[this.messageKey] = args[0]
-      }
+      Object.assign(payload, merge)
     }
 
-    const transforms = this.fieldTransforms
-    if (transforms) {
-      for (const fieldName in transforms) {
-        if (hop.call(transforms, fieldName)) {
-          const transform = transforms[fieldName]
-          if (typeof transform === 'function' && hop.call(payload, fieldName)) {
-            try {
-              payload[fieldName] = transform.call(this, payload[fieldName], fieldName)
-            } catch (_) {
-              // noop
-            }
-          }
+    payload[this.levelKey] = this.numericLevel ? level : levelString
+    payload[this.messageKey] = msg
+
+    if (this.postprocess) {
+      try {
+        const postprocessed = this.postprocess(payload)
+        if (!postprocessed) {
+          return
         }
+        payload = postprocessed as Payload
+      } catch(_) {
+        // noop
       }
     }
 
     payload[levelStringSym] = levelString
     payload[levelNumberSym] = level
+    payload[messageSym] = msg
 
     try {
       this.output(payload)
@@ -181,10 +153,10 @@ export class BaseLogger<T extends LevelMapping> {
   }
 }
 
+type LogMethod = ((msg: string, obj?: object) => void)
+
 export type LogMethods<T extends LevelMapping> = {
-  [l in keyof T]:
-    ((obj: object, msg?: string, ...args: unknown[]) => void) &
-    ((msg: string, ...args: unknown[]) => void)
+  [l in keyof T]: LogMethod
 }
 
 export type Logger<T extends LevelMapping> = BaseLogger<T> & LogMethods<T>

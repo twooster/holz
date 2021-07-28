@@ -16,7 +16,7 @@ function prepare(t) {
 
   t.suite('child child', () => {
     t.bench('holz', () => {
-      holzChild.info({ a: 123 }, 'hello world')
+      holzChild.info('hello world', { a: 123 })
     })
 
     t.bench('pino', () => {

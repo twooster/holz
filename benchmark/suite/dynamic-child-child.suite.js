@@ -11,7 +11,7 @@ function prepare(t) {
       holzLogger
         .child({ wizzle: "wuzzle", sizzle: "sazzle", dizzle: "dazzle" })
         .child({ gaggle: "google", dingle: "dangle", foofy: "toofy" })
-        .info({ msg: 'hello world' })
+        .info('hello world')
     })
 
     t.bench('pino', () => {

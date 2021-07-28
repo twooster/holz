@@ -9,7 +9,7 @@ function prepare(t) {
 
   t.suite('basic', () => {
     t.bench('holz', () => {
-      holzLogger.info({ a: 123 }, 'hello world')
+      holzLogger.info('hello world', { a: 123 })
     })
 
     t.bench('pino', () => {

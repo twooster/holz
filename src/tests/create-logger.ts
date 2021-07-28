@@ -2,10 +2,9 @@ import test from 'ava'
 import {
   createLogger,
   defaultLevels,
-  defaultFormat,
-  defaultFieldTransforms,
-  defaultTransform,
-  defaultLevelOutput,
+  defaultPreprocess,
+  defaultPostprocess,
+  defaultNumericLevel,
   defaultLevelKey,
   defaultMessageKey,
 } from '../create-logger'
@@ -16,12 +15,11 @@ test('can create a logger', t => {
   t.is(logger.base, undefined)
   t.is(logger.fields, undefined)
   t.is(logger.levels, defaultLevels)
-  t.is(logger.fieldTransforms, defaultFieldTransforms)
-  t.is(logger.transform, defaultTransform)
-  t.is(logger.levelOutput, defaultLevelOutput)
+  t.is(logger.preprocess, defaultPreprocess)
+  t.is(logger.postprocess, defaultPostprocess)
+  t.is(logger.numericLevel, defaultNumericLevel)
   t.is(logger.levelKey, defaultLevelKey)
   t.is(logger.messageKey, defaultMessageKey)
-  t.is(logger.format, defaultFormat)
 })
 
 test('can create a logger with a level', t => {

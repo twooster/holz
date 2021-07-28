@@ -1,16 +1,19 @@
-import { format as defaultFormat } from 'util'
-
 import { LoggerOpts, LevelMapping, BaseLogger, Logger } from './logger'
+import { transformError, jsonToStdout, transform } from './util'
 
-import { transformError, jsonToStream } from './util'
+export const defaultOutput = jsonToStdout
 
-export { defaultFormat }
-
-export const defaultOutput = jsonToStream(process.stdout)
-
-export function defaultTransform(o: object) {
-  return o instanceof Error ? { error: transformError(o) } : o
+export function defaultPreprocess(o: object): object {
+  if (o instanceof Error) {
+    return { error: transformError(o) }
+  }
+  return o
 }
+
+export const defaultPostprocess = transform({
+  error: transformError,
+  err: transformError
+})
 
 export const defaultLevels = {
   trace: 10,
@@ -21,19 +24,10 @@ export const defaultLevels = {
   fatal: 60,
 } as const
 
-export const defaultLevelOutput = 'string' as const
-
+export const defaultNumericLevel = false
 export const defaultLevelKey = 'level'
-
 export const defaultMessageKey = 'msg'
-
 export const defaultLevel = defaultLevels['info']
-
-export const defaultFieldTransforms = {
-  err: transformError,
-  error: transformError,
-}
-
 
 type CreateLoggerOptsWithoutLevels = Partial<Exclude<LoggerOpts<typeof defaultLevels>, 'levels'>>
 type CreateLoggerOpts<T extends LevelMapping> = Partial<Exclude<LoggerOpts<T>, 'levels' | 'level'>> & Pick<LoggerOpts<T>, 'levels' | 'level'>
@@ -48,11 +42,10 @@ export function createLogger<T extends LevelMapping>(opts: CreateLoggerOpts<T> |
     level: defaultLevel as any,
     levelKey: defaultLevelKey,
     messageKey: defaultMessageKey,
-    levelOutput: defaultLevelOutput,
-    fieldTransforms: defaultFieldTransforms,
-    format: defaultFormat,
+    numericLevel: defaultNumericLevel,
     output: defaultOutput,
-    transform: defaultTransform,
+    preprocess: defaultPreprocess,
+    postprocess: defaultPostprocess,
     ...opts
   }) as Logger<T>
 }

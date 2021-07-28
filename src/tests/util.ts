@@ -41,7 +41,7 @@ test('transformError returns the original object when not an Error', t => {
 test('transformError captures pertinent error information', t => {
   const err = new Error('oh no!')
   err.stack = 'stack'
-  const trans = util.transformError(err)
+  const trans = util.transformError(err) as any
   t.is(trans instanceof Error, false)
   t.is(trans.stack, 'stack')
   t.is(trans.message, 'oh no!')
@@ -60,7 +60,7 @@ test('transformError captures recursive causes', t => {
   err.stack = 'error'
   err.cause = () => cause
 
-  const trans = util.transformError(err)
+  const trans = util.transformError(err) as any
   t.is(trans.stack, 'error\nCaused by: cause\nCaused by: cause-cause')
 })
 
@@ -72,6 +72,66 @@ test('transformError handles throwing causes gracefully', t => {
   err.stack = 'error'
   err.cause = () => cause
 
-  const trans = util.transformError(err)
+  const trans = util.transformError(err) as any
   t.is(trans.stack, 'error\nCaused by: cause')
+})
+
+test('redact plus transform', t => {
+  const trans = util.transform({
+    a1: util.redact(),
+    a2: {
+      b1: {
+        c1: util.redact(3)
+      },
+      b2: {
+        c1: {
+          d1: util.redact(-3)
+        }
+      },
+      b3: () => false,
+      b4: () => true,
+    },
+    a3: {
+      b1: () => true
+    }
+  })
+
+  t.deepEqual(
+    trans({
+      a1: 'a1',
+      a2: {
+        b1: {
+          c1: 'c1xyzc1',
+          c2: 'c2'
+        },
+        b2: {
+          c1: {
+            d1: 'd1xyzd1',
+            d2: 'd2'
+          },
+          c2: 'c2'
+        },
+        b3: 'b3',
+      },
+      a3: 'a3'
+    }),
+    {
+      a1: '[REDACTED]',
+      a2: {
+        b1: {
+          c1: 'c1x[REDACTED]',
+          c2: 'c2'
+        },
+        b2: {
+          c1: {
+            d1: '[REDACTED]zd1',
+            d2: 'd2'
+          },
+          c2: 'c2'
+        },
+        b3: false
+      },
+      a3: 'a3'
+    }
+  )
 })
